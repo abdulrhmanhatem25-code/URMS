@@ -3,15 +3,18 @@ import Modal from '@/shared/components/Modal'
 import { Button } from '@/components/ui/button'
 import { useLanguageStore } from '@/app/store/useLanguageStore'
 import { cn } from '@/lib/utils'
+import { useState } from 'react'
+import { useAuthStore } from '@/app/store/useAuthStore'
+import { useGetStatuses, useAdvisorReview, useStaffConfirm, useAdminOverride, useWithdrawRequest } from '@/features/requests/hooks/useRequests'
 
 // ── Status config ──────────────────────────────────────────────────────────────
 
 export const STATUS_CONFIG = {
-  Pending:         { ar: 'قيد الانتظار',    en: 'Pending',           cls: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
-  AdvisorApproved: { ar: 'موافقة المرشد',   en: 'Advisor Approved',  cls: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
-  Approved:        { ar: 'مقبول',           en: 'Approved',          cls: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-  Rejected:        { ar: 'مرفوض',           en: 'Rejected',          cls: 'bg-destructive/10 text-destructive border-destructive/20' },
-  Completed:       { ar: 'مكتمل',           en: 'Completed',         cls: 'bg-green-600/10 text-green-600 border-green-600/20' },
+  Pending:              { ar: 'معلق (في انتظار مراجعة المرشد)',   en: 'Pending Advisor Review', cls: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+  AdvisorApproved:      { ar: 'موافق عليه من المرشد الأكاديمي',  en: 'Approved by Advisor',    cls: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+  SentToAdministration: { ar: 'أُرسِل إلى شؤون الطلاب / الإدارة', en: 'Sent to Administration', cls: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' },
+  Completed:            { ar: 'مكتمل / تم التنفيذ',              en: 'Completed',              cls: 'bg-green-600/10 text-green-600 border-green-600/20' },
+  Rejected:             { ar: 'مرفوض',                           en: 'Rejected',               cls: 'bg-destructive/10 text-destructive border-destructive/20' },
 }
 
 const formatDate = (d, lang) => {
@@ -46,8 +49,174 @@ function InfoRow({ icon: Icon, label, value }) {
   )
 }
 
+function AdvisorAction({ request, onClose, lang }) {
+  const [isApproved, setIsApproved] = useState(true)
+  const [reason, setReason] = useState('')
+  const { mutate, isPending } = useAdvisorReview()
+
+  const handleSubmit = () => {
+    mutate({ id: request.id, body: { isApproved, rejectionReason: reason.trim() || null } }, {
+      onSuccess: onClose
+    })
+  }
+
+  return (
+    <div className="p-5 bg-secondary/30 rounded-xl border border-border mt-8 space-y-4">
+      <h4 className="text-sm font-semibold flex items-center gap-2">
+        <div className="w-1 h-4 bg-primary rounded-full" />
+        {lang === 'ar' ? 'مراجعة المرشد الأكاديمي' : 'Academic Advisor Review'}
+      </h4>
+      <div className="flex gap-6">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="radio" checked={isApproved} onChange={() => setIsApproved(true)} className="accent-primary w-4 h-4" />
+          {lang === 'ar' ? 'موافق' : 'Approve'}
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="radio" checked={!isApproved} onChange={() => setIsApproved(false)} className="accent-primary w-4 h-4" />
+          {lang === 'ar' ? 'غير موافق' : 'Reject'}
+        </label>
+      </div>
+      {!isApproved && (
+        <textarea
+          value={reason}
+          onChange={e => setReason(e.target.value)}
+          placeholder={lang === 'ar' ? 'سبب الرفض (اختياري)' : 'Rejection Reason (Optional)'}
+          className="w-full text-sm rounded-md border border-input bg-background px-3 py-2 outline-none focus:border-primary"
+          rows={2}
+        />
+      )}
+      <div className="flex justify-end pt-2">
+        <Button onClick={handleSubmit} disabled={isPending} size="sm">
+          {lang === 'ar' ? 'إرسال المراجعة' : 'Submit Review'}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function StaffAction({ request, onClose, lang }) {
+  const [isApproved, setIsApproved] = useState(true)
+  const [notes, setNotes] = useState('')
+  const { mutate, isPending } = useStaffConfirm()
+
+  const handleSubmit = () => {
+    mutate({ id: request.id, body: { isApproved, confirmationNotes: notes.trim() || null } }, {
+      onSuccess: onClose
+    })
+  }
+
+  return (
+    <div className="p-5 bg-secondary/30 rounded-xl border border-border mt-8 space-y-4">
+      <h4 className="text-sm font-semibold flex items-center gap-2">
+        <div className="w-1 h-4 bg-primary rounded-full" />
+        {lang === 'ar' ? 'تأكيد السكرتارية' : 'Staff Confirmation'}
+      </h4>
+      <div className="flex gap-6">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="radio" checked={isApproved} onChange={() => setIsApproved(true)} className="accent-primary w-4 h-4" />
+          {lang === 'ar' ? 'تأكيد الطلب' : 'Confirm Request'}
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="radio" checked={!isApproved} onChange={() => setIsApproved(false)} className="accent-primary w-4 h-4" />
+          {lang === 'ar' ? 'رفض الطلب' : 'Reject Request'}
+        </label>
+      </div>
+      <textarea
+        value={notes}
+        onChange={e => setNotes(e.target.value)}
+        placeholder={lang === 'ar' ? 'ملاحظات التأكيد (اختياري)' : 'Confirmation Notes (Optional)'}
+        className="w-full text-sm rounded-md border border-input bg-background px-3 py-2 outline-none focus:border-primary"
+        rows={2}
+      />
+      <div className="flex justify-end pt-2">
+        <Button onClick={handleSubmit} disabled={isPending} size="sm">
+          {lang === 'ar' ? 'إرسال التأكيد' : 'Submit Confirmation'}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function AdminAction({ request, onClose, lang }) {
+  const [targetStatus, setTargetStatus] = useState('')
+  const [notes, setNotes] = useState('')
+  const { mutate, isPending } = useAdminOverride()
+  const { data: statuses } = useGetStatuses()
+
+  const handleSubmit = () => {
+    if (!targetStatus) return
+    mutate({ id: request.id, body: { targetStatus, reasonOrNotes: notes.trim() || null } }, {
+      onSuccess: onClose
+    })
+  }
+
+  return (
+    <div className="p-5 bg-destructive/5 rounded-xl border border-destructive/20 mt-8 space-y-4">
+      <h4 className="text-sm font-semibold text-destructive flex items-center gap-2">
+        <AlertTriangle className="w-4 h-4" />
+        {lang === 'ar' ? 'صلاحيات مدير النظام (تخطي الحالة)' : 'SuperAdmin Override'}
+      </h4>
+      
+      <select
+        value={targetStatus}
+        onChange={e => setTargetStatus(e.target.value)}
+        className="w-full text-sm rounded-md border border-input bg-background px-3 py-2 outline-none focus:border-primary"
+      >
+        <option value="">{lang === 'ar' ? '-- اختر الحالة الجديدة --' : '-- Select Target Status --'}</option>
+        {statuses?.map(s => (
+          <option key={s.id} value={s.name}>
+            {lang === 'ar' ? s.displayNameAr : s.displayNameEn}
+          </option>
+        ))}
+      </select>
+
+      <textarea
+        value={notes}
+        onChange={e => setNotes(e.target.value)}
+        placeholder={lang === 'ar' ? 'سبب التجاوز أو ملاحظات (اختياري)' : 'Override Reason/Notes (Optional)'}
+        className="w-full text-sm rounded-md border border-input bg-background px-3 py-2 outline-none focus:border-primary"
+        rows={2}
+      />
+      <div className="flex justify-end pt-2">
+        <Button variant="destructive" onClick={handleSubmit} disabled={isPending || !targetStatus} size="sm">
+          {lang === 'ar' ? 'تنفيذ التخطي' : 'Apply Override'}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function StudentAction({ request, onClose, lang }) {
+  const { mutate, isPending } = useWithdrawRequest()
+
+  const handleWithdraw = () => {
+    if (!confirm(lang === 'ar' ? 'هل أنت متأكد من رغبتك في سحب وإلغاء هذا الطلب نهائياً؟' : 'Are you sure you want to withdraw and cancel this request permanently?')) return
+    mutate(request.id, {
+      onSuccess: onClose
+    })
+  }
+
+  return (
+    <div className="p-5 bg-destructive/5 rounded-xl border border-destructive/20 mt-8 space-y-4">
+      <h4 className="text-sm font-semibold text-destructive flex items-center gap-2">
+        <XCircle className="w-4 h-4" />
+        {lang === 'ar' ? 'سحب الطلب' : 'Withdraw Request'}
+      </h4>
+      <p className="text-sm text-muted-foreground">
+        {lang === 'ar' ? 'بإمكانك سحب (إلغاء) هذا الطلب نهائياً الآن. لن يتمكن المرشد أو الإدارة من مراجعته بعد السحب.' : 'You can withdraw (cancel) this request permanently now. Advisors or staff will not be able to review it afterward.'}
+      </p>
+      <div className="flex justify-end pt-2">
+        <Button variant="destructive" onClick={handleWithdraw} disabled={isPending} size="sm">
+          {lang === 'ar' ? 'سحب الطلب' : 'Withdraw Request'}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 export default function RequestDetailsModal({ request, isOpen, onClose }) {
   const { t: tx, lang, dir } = useTranslation('requestDetailsModal')
+  const { user } = useAuthStore()
 
   if (!request) return null
 
@@ -73,7 +242,7 @@ export default function RequestDetailsModal({ request, isOpen, onClose }) {
             'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border',
             statusCfg.cls,
           )}>
-            {statusCfg[lang]}
+            {lang === 'ar' ? (request.statusAr || statusCfg.ar) : (request.statusEn || statusCfg.en)}
           </span>
           {formTitle && (
             <span className="text-sm font-semibold text-foreground">{formTitle}</span>
@@ -97,6 +266,17 @@ export default function RequestDetailsModal({ request, isOpen, onClose }) {
             )}
           </div>
 
+          {/* ── Next Action ────────────────────────────────────────────────── */}
+          {request.nextAction && (
+            <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-primary">
+              <Clock className="w-4 h-4 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-xs mb-1">{lang === 'ar' ? 'الإجراء التالي' : 'Next Action'}</p>
+                <p>{lang === 'ar' ? request.nextAction : (request.nextActionEn || request.nextAction)}</p>
+              </div>
+            </div>
+          )}
+
           {/* ── Rejection reason ───────────────────────────────────────────── */}
           {request.status === 'Rejected' && request.rejectionReason && (
             <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-destructive/10 border border-destructive/20 text-sm text-destructive">
@@ -104,6 +284,29 @@ export default function RequestDetailsModal({ request, isOpen, onClose }) {
               <div>
                 <p className="font-semibold text-xs mb-1">{tx.rejectionReason}</p>
                 <p>{request.rejectionReason}</p>
+              </div>
+            </div>
+          )}
+
+          {/* ── External Administration ──────────────────────────────────────── */}
+          {(request.isExternalAdministrationNotificationSent || request.externalAdministrationEmail) && (
+            <div>
+              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                <div className="w-1 h-4 bg-primary rounded-full" />
+                {lang === 'ar' ? 'شؤون الطلاب / الإدارة' : 'Administration / Staff'}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-border bg-card">
+                <InfoRow icon={User} label={lang === 'ar' ? 'البريد الإلكتروني' : 'Email'} value={request.externalAdministrationEmail} />
+                <InfoRow icon={CalendarDays} label={lang === 'ar' ? 'تاريخ الإرسال' : 'Sent At'} value={formatDate(request.externalAdministrationSentAt, lang)} />
+                {request.externalAdministrationRespondedAt && (
+                  <InfoRow icon={CheckCircle} label={lang === 'ar' ? 'تاريخ الرد' : 'Responded At'} value={formatDate(request.externalAdministrationRespondedAt, lang)} />
+                )}
+                {request.externalAdministrationResponseNotes && (
+                  <div className="sm:col-span-2 mt-2">
+                    <p className="text-xs text-muted-foreground mb-1">{lang === 'ar' ? 'ملاحظات' : 'Notes'}</p>
+                    <p className="text-sm p-3 rounded-lg bg-secondary/50 border border-border text-foreground">{request.externalAdministrationResponseNotes}</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -192,6 +395,20 @@ export default function RequestDetailsModal({ request, isOpen, onClose }) {
               </div>
             )}
           </div>
+
+          {/* ── Action Forms ─────────────────────────────────────────────── */}
+          {request.canWithdraw && (
+            <StudentAction request={request} onClose={onClose} lang={lang} />
+          )}
+          {user?.roles?.includes('AcademicAdvisor') && (
+            <AdvisorAction request={request} onClose={onClose} lang={lang} />
+          )}
+          {user?.roles?.includes('Secretary') && (
+            <StaffAction request={request} onClose={onClose} lang={lang} />
+          )}
+          {user?.roles?.includes('SuperAdmin') && (
+            <AdminAction request={request} onClose={onClose} lang={lang} />
+          )}
         </div>
 
         {/* ── Footer ──────────────────────────────────────────────────────── */}

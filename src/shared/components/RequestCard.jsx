@@ -31,7 +31,7 @@ export default function RequestCard({ request, onView, showStudent = true }) {
           'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border',
           statusCfg.cls,
         )}>
-          {statusCfg[lang]}
+          {lang === 'ar' ? (request.statusAr || statusCfg.ar) : (request.statusEn || statusCfg.en)}
         </span>
         <span className="text-xs text-muted-foreground font-mono">{tx.requestId}{request.id}</span>
       </div>
@@ -43,6 +43,18 @@ export default function RequestCard({ request, onView, showStudent = true }) {
           {formTitle ?? '—'}
         </p>
       </div>
+
+      {/* Next Action */}
+      {request.nextAction && (
+        <div className="mt-1 p-2.5 bg-primary/5 rounded-lg border border-primary/10">
+          <p className="text-[11px] font-medium text-primary/70 mb-0.5 uppercase tracking-wider">
+            {lang === 'ar' ? 'الإجراء التالي' : 'Next Action'}
+          </p>
+          <p className="text-xs font-semibold text-primary leading-snug line-clamp-2">
+            {lang === 'ar' ? request.nextAction : (request.nextActionEn || request.nextAction)}
+          </p>
+        </div>
+      )}
 
       {/* Student info — shown for admin view, hidden for student's own view */}
       {showStudent && (

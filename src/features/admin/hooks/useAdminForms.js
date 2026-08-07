@@ -59,12 +59,24 @@ export function useDeleteForm() {
   })
 }
 
+export function useAddField() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ formId, body }) => adminFormsApi.addField(formId, body),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: FORMS_KEY })
+      qc.invalidateQueries({ queryKey: formKey(variables.formId) })
+    },
+  })
+}
+
 export function useDeleteField() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (fieldId) => adminFormsApi.deleteField(fieldId),
-    onSuccess: () => {
+    mutationFn: ({ formId, fieldId }) => adminFormsApi.deleteField(formId, fieldId),
+    onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: FORMS_KEY })
+      if (variables.formId) qc.invalidateQueries({ queryKey: formKey(variables.formId) })
     },
   })
 }

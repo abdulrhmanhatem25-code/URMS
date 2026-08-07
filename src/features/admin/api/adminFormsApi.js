@@ -22,7 +22,11 @@ export const adminFormsApi = {
   deleteForm: (id) =>
     api.delete(`/api/admin/forms/${id}`).then(r => r.data),
 
-  /** DELETE /api/admin/forms/fileds/:fieldId  (note: API typo "fileds") */
-  deleteField: (fieldId) =>
-    api.delete(`/api/admin/forms/fileds/${fieldId}`).then(r => r.data),
+  /** DELETE /api/admin/forms/:formId/fields/:fieldId */
+  deleteField: (formId, fieldId) =>
+    api.delete(`/api/admin/forms/${formId}/fields/${fieldId}`).then(r => r.data),
+
+  /** POST /api/admin/forms/:formId/fields */
+  addField: (formId, body) =>
+    api.post(`/api/admin/forms/${formId}/fields`, body).then(r => r.data),
 }

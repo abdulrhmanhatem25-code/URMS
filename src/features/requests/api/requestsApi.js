@@ -15,4 +15,19 @@ export const requestsApi = {
 
   /** GET /api/Requests — all requests (SuperAdmin + Secretary + AcademicAdvisor) */
   getRequests: () => api.get('/api/Requests').then(r => r.data),
+
+  /** GET /api/Requests/statuses — list of all possible statuses */
+  getStatuses: () => api.get('/api/Requests/statuses').then(r => r.data),
+
+  /** POST /api/Requests/:id/advisor-review */
+  advisorReview: (id, body) => api.post(`/api/Requests/${id}/advisor-review`, body).then(r => r.data),
+
+  /** POST /api/Requests/:id/staff-confirm */
+  staffConfirm: (id, body) => api.post(`/api/Requests/${id}/secretary-confirm`, body).then(r => r.data),
+
+  /** POST /api/Requests/:id/admin-override */
+  adminOverride: (id, body) => api.post(`/api/Requests/${id}/admin-override`, body).then(r => r.data),
+
+  /** POST /api/Requests/:id/withdraw */
+  withdrawRequest: (id) => api.post(`/api/Requests/${id}/withdraw`).then(r => r.data),
 }

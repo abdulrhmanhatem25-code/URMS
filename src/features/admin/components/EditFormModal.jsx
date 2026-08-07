@@ -8,7 +8,7 @@ import {
 import Modal from '@/shared/components/Modal'
 import { Button } from '@/components/ui/button'
 import { useLanguageStore } from '@/app/store/useLanguageStore'
-import { useUpdateForm, useDeleteField } from '../hooks/useAdminForms'
+import { useUpdateForm, useDeleteField, useAddField } from '../hooks/useAdminForms'
 import { cn } from '@/lib/utils'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -40,6 +40,7 @@ export default function EditFormModal({ form, isOpen, onClose }) {
   const { lang, dir } = useLanguageStore()
   const { mutate: updateForm, isPending } = useUpdateForm()
   const { mutate: deleteField } = useDeleteField()
+  const { mutate: addField } = useAddField()
 
   const [tab, setTab] = useState('basic')
   // Local fields state — updated optimistically on delete / edit
@@ -70,11 +71,31 @@ export default function EditFormModal({ form, isOpen, onClose }) {
 
   // Delete a field via API → remove from local state
   const handleDeleteField = (fieldId) => {
-    deleteField(fieldId, {
+    deleteField({ formId: form.id, fieldId }, {
       onSuccess: () => {
         setFields(prev => prev.filter(f => f.id !== fieldId))
         if (expandedId === fieldId) setExpandedId(null)
       },
+    })
+  }
+
+  // Add a new field via API → add to local state
+  const handleAddField = () => {
+    const payload = {
+      labelAr: 'حقل جديد',
+      labelEn: 'New Field',
+      placeholder: '',
+      type: 'Text',
+      isRequired: true,
+      order: fields.length > 0 ? Math.max(...fields.map(f => f.order)) + 1 : 1,
+      options: [],
+    }
+
+    addField({ formId: form.id, body: payload }, {
+      onSuccess: (newField) => {
+        setFields(prev => [...prev, newField])
+        setExpandedId(newField.id || newField.fieldKey)
+      }
     })
   }
 
@@ -132,22 +153,31 @@ export default function EditFormModal({ form, isOpen, onClose }) {
     >
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
         {/* ── Tabs ──────────────────────────────────────────────────────────── */}
-        <div className="flex border-b border-border px-6 shrink-0">
-          {tabs.map(t => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTab(t.id)}
-              className={cn(
-                'px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors',
-                tab === t.id
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {t[lang]}
-            </button>
-          ))}
+        <div className="flex items-center justify-between border-b border-border px-6 shrink-0">
+          <div className="flex">
+            {tabs.map(t => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={cn(
+                  'px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors',
+                  tab === t.id
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {t[lang]}
+              </button>
+            ))}
+          </div>
+          {/* Add Field Button visible when on fields tab */}
+          {tab === 'fields' && (
+            <Button type="button" size="sm" variant="outline" onClick={handleAddField} className="gap-2 h-8">
+              <Plus className="w-3.5 h-3.5" />
+              {lang === 'ar' ? 'إضافة حقل' : 'Add Field'}
+            </Button>
+          )}
         </div>
 
         {/* ── Tab: Basic Info ───────────────────────────────────────────────── */}
@@ -207,8 +237,12 @@ export default function EditFormModal({ form, isOpen, onClose }) {
         {tab === 'fields' && (
           <div className="p-6 space-y-3 min-h-[300px]">
             {fields.length === 0 && (
-              <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
-                {lang === 'ar' ? 'لا توجد حقول في هذا النموذج' : 'No fields in this form'}
+              <div className="flex flex-col items-center justify-center h-40 text-sm text-muted-foreground gap-3">
+                <p>{lang === 'ar' ? 'لا توجد حقول في هذا النموذج' : 'No fields in this form'}</p>
+                <Button type="button" variant="secondary" onClick={handleAddField} className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  {lang === 'ar' ? 'أضف حقلك الأول' : 'Add First Field'}
+                </Button>
               </div>
             )}
 
