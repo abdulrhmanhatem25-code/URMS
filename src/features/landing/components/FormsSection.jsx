@@ -3,22 +3,7 @@ import { useLanguageStore } from '@/app/store/useLanguageStore'
 import { useForms } from '../hooks/useForms'
 import FormCard from './FormCard'
 
-const t = {
-  ar: {
-    title: 'النماذج المتاحة',
-    subtitle: 'اضغط على أي نموذج للتقديم — يتطلب تسجيل الدخول',
-    empty: 'لا توجد نماذج متاحة حالياً',
-    error: 'حدث خطأ أثناء تحميل النماذج',
-    retry: 'إعادة المحاولة',
-  },
-  en: {
-    title: 'Available Forms',
-    subtitle: 'Click any form to apply — login required',
-    empty: 'No forms available at the moment',
-    error: 'Failed to load forms',
-    retry: 'Try again',
-  },
-}
+import { useTranslation } from '@/app/hooks/useTranslation'
 
 // Skeleton card for loading state
 function SkeletonCard() {
@@ -40,8 +25,7 @@ function SkeletonCard() {
 }
 
 export default function FormsSection() {
-  const { lang, dir } = useLanguageStore()
-  const tx = t[lang]
+  const { t: tx, lang, dir } = useTranslation('formsSection')
   const { data: forms, isLoading, isError, refetch } = useForms()
 
   return (
@@ -52,7 +36,7 @@ export default function FormsSection() {
           <div className="flex items-center justify-center gap-2 mb-3">
             <div className="h-px flex-1 max-w-16 bg-border" />
             <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {lang === 'ar' ? 'النماذج' : 'Forms'}
+              {tx.formsLabel}
             </span>
             <div className="h-px flex-1 max-w-16 bg-border" />
           </div>

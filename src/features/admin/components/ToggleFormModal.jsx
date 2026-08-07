@@ -5,26 +5,10 @@ import { Button } from '@/components/ui/button'
 import { useLanguageStore } from '@/app/store/useLanguageStore'
 import { useToggleForm } from '../hooks/useAdminForms'
 
-const t = {
-  ar: {
-    activate: { title: 'تفعيل النموذج', btn: 'تفعيل', hint: 'هل تريد تفعيل هذا النموذج والسماح بالتقديم عليه؟' },
-    deactivate: { title: 'إغلاق النموذج', btn: 'إغلاق', hint: 'أدخل سبب إغلاق النموذج (اختياري)' },
-    cancel: 'إلغاء',
-    reasonLabel: 'سبب الإغلاق',
-    reasonPlaceholder: 'مثال: اكتمل العدد المسموح',
-  },
-  en: {
-    activate: { title: 'Activate Form', btn: 'Activate', hint: 'Do you want to activate this form and allow submissions?' },
-    deactivate: { title: 'Close Form', btn: 'Close', hint: 'Enter a reason for closing the form (optional)' },
-    cancel: 'Cancel',
-    reasonLabel: 'Closure reason',
-    reasonPlaceholder: 'e.g. Maximum submissions reached',
-  },
-}
+import { useTranslation } from '@/app/hooks/useTranslation'
 
 export default function ToggleFormModal({ form, isOpen, onClose }) {
-  const { lang, dir } = useLanguageStore()
-  const tx = t[lang]
+  const { t: tx, lang, dir } = useTranslation('toggleFormModal')
   const { mutate: toggle, isPending } = useToggleForm()
   const [reason, setReason] = useState(form?.closedReasonMessage ?? '')
 

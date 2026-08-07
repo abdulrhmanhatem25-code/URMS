@@ -3,28 +3,7 @@ import { CalendarDays, Users, AlertCircle, ArrowLeft, ArrowRight, CheckCircle, X
 import { useLanguageStore } from '@/app/store/useLanguageStore'
 import { cn } from '@/lib/utils'
 
-const t = {
-  ar: {
-    apply: 'تقديم الطلب',
-    closed: 'مغلق',
-    active: 'متاح',
-    requests: 'طلب',
-    from: 'من',
-    to: 'إلى',
-    closedReason: 'سبب الإغلاق',
-    loginRequired: 'يجب تسجيل الدخول للتقديم',
-  },
-  en: {
-    apply: 'Apply Now',
-    closed: 'Closed',
-    active: 'Available',
-    requests: 'requests',
-    from: 'From',
-    to: 'To',
-    closedReason: 'Closure reason',
-    loginRequired: 'Login required to apply',
-  },
-}
+import { useTranslation } from '@/app/hooks/useTranslation'
 
 const formatDate = (dateStr, lang) => {
   return new Date(dateStr).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US', {
@@ -35,8 +14,7 @@ const formatDate = (dateStr, lang) => {
 }
 
 export default function FormCard({ form }) {
-  const { lang, dir } = useLanguageStore()
-  const tx = t[lang]
+  const { t: tx, lang, dir } = useTranslation('formCard')
   const navigate = useNavigate()
 
   const title = lang === 'ar' ? form.titleAr : form.titleEn

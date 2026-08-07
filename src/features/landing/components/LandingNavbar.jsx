@@ -4,15 +4,12 @@ import { useTheme } from '@/shared/hooks/useTheme'
 import { useLanguageStore } from '@/app/store/useLanguageStore'
 import { Button } from '@/components/ui/button'
 
-const t = {
-  ar: { login: 'تسجيل الدخول', register: 'إنشاء حساب', systemName: 'نظام URMS' },
-  en: { login: 'Login', register: 'Register', systemName: 'URMS System' },
-}
+import { useTranslation } from '@/app/hooks/useTranslation'
 
 export default function LandingNavbar() {
   const { isDark, toggleTheme } = useTheme()
-  const { lang, dir, toggleLang } = useLanguageStore()
-  const tx = t[lang]
+  const { t: tx, lang, dir } = useTranslation('landingNavbar')
+  const { toggleLang } = useLanguageStore()
 
   return (
     <nav

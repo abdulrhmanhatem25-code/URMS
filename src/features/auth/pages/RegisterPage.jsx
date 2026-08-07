@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { GraduationCap, Sun, Moon, CheckCircle2 } from 'lucide-react'
+import { GraduationCap, Sun, Moon, CheckCircle2, ArrowRight } from 'lucide-react'
 import { useTheme } from '@/shared/hooks/useTheme'
 import RegisterForm from '../components/RegisterForm'
 
@@ -20,24 +20,33 @@ export default function RegisterPage() {
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-card/50 backdrop-blur-sm">
-        <Link to="/login" className="flex items-center gap-2.5 group">
+        <Link to="/" className="flex items-center gap-2.5 group">
           <div className="p-1.5 bg-primary/10 rounded-lg border border-primary/20 group-hover:bg-primary/15 transition-colors">
             <GraduationCap className="w-5 h-5 text-primary" />
           </div>
           <span className="font-bold text-base text-foreground">URMS</span>
         </Link>
 
-        <button
-          onClick={toggleTheme}
-          className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border transition-colors"
-          aria-label="تغيير المظهر"
-        >
-          {isDark ? (
-            <Sun className="w-4 h-4 text-muted-foreground" />
-          ) : (
-            <Moon className="w-4 h-4 text-muted-foreground" />
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/"
+            className="flex items-center gap-2 p-2 px-3 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+          >
+            <ArrowRight className="w-4 h-4" />
+            الرئيسية
+          </Link>
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border transition-colors"
+            aria-label="تغيير المظهر"
+          >
+            {isDark ? (
+              <Sun className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <Moon className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+        </div>
       </header>
 
       {/* ── Body ──────────────────────────────────────────────────────────── */}

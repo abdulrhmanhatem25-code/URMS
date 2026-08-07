@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { GraduationCap, Sun, Moon } from 'lucide-react'
+import { GraduationCap, Sun, Moon, ArrowRight } from 'lucide-react'
 import { useTheme } from '@/shared/hooks/useTheme'
 import LoginForm from '../components/LoginForm'
 
@@ -22,9 +22,9 @@ export default function LoginPage() {
         <div className="relative z-10 text-center space-y-8 max-w-xs">
           {/* Logo */}
           <div className="flex justify-center">
-            <div className="p-5 bg-primary/10 rounded-2xl border border-primary/20 shadow-lg shadow-primary/10">
+            <Link to="/" className="p-5 bg-primary/10 rounded-2xl border border-primary/20 shadow-lg shadow-primary/10 hover:scale-105 transition-transform">
               <GraduationCap className="w-14 h-14 text-primary" />
-            </div>
+            </Link>
           </div>
 
           {/* Title */}
@@ -62,18 +62,27 @@ export default function LoginPage() {
 
       {/* ── Right: Login Form ─────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 lg:px-14 relative">
-        {/* Theme toggle */}
-        <button
-          onClick={toggleTheme}
-          className="absolute top-5 left-5 p-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border transition-colors"
-          aria-label="تغيير المظهر"
-        >
-          {isDark ? (
-            <Sun className="w-4 h-4 text-muted-foreground" />
-          ) : (
-            <Moon className="w-4 h-4 text-muted-foreground" />
-          )}
-        </button>
+        {/* Header Controls */}
+        <div className="absolute top-5 left-5 flex items-center gap-2">
+          <Link
+            to="/"
+            className="flex items-center gap-2 p-2 px-3 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+          >
+            <ArrowRight className="w-4 h-4" />
+            الرئيسية
+          </Link>
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border transition-colors"
+            aria-label="تغيير المظهر"
+          >
+            {isDark ? (
+              <Sun className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <Moon className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+        </div>
 
         <div className="w-full max-w-sm space-y-8">
           {/* Mobile logo */}

@@ -10,24 +10,7 @@ import PreviewFormModal from '../components/PreviewFormModal'
 import DeleteFormModal from '../components/DeleteFormModal'
 import { Button } from '@/components/ui/button'
 
-const t = {
-  ar: {
-    title: 'إدارة النماذج',
-    subtitle: 'عرض وتعديل وإدارة جميع نماذج الطلبات',
-    newForm: 'نموذج جديد',
-    empty: 'لا توجد نماذج بعد',
-    error: 'فشل في تحميل النماذج',
-    retry: 'إعادة المحاولة',
-  },
-  en: {
-    title: 'Forms Management',
-    subtitle: 'View, edit and manage all request forms',
-    newForm: 'New Form',
-    empty: 'No forms yet',
-    error: 'Failed to load forms',
-    retry: 'Try again',
-  },
-}
+import { useTranslation } from '@/app/hooks/useTranslation'
 
 function SkeletonCard() {
   return (
@@ -44,8 +27,7 @@ function SkeletonCard() {
 }
 
 export default function AdminFormsPage() {
-  const { lang, dir } = useLanguageStore()
-  const tx = t[lang]
+  const { t: tx, lang, dir } = useTranslation('adminForms')
 
   const { data: forms, isLoading, isError, refetch } = useAdminForms()
 
