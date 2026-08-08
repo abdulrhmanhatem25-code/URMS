@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, FileText, ClipboardList, LogOut, ChevronRight, ChevronLeft } from 'lucide-react'
+import { LayoutDashboard, FileText, ClipboardList, LogOut, ChevronRight, ChevronLeft, UserPlus, Users } from 'lucide-react'
 import { useLanguageStore } from '@/app/store/useLanguageStore'
 import { useAuthStore } from '@/app/store/useAuthStore'
 import { usePermissions } from '@/app/hooks/usePermissions'
@@ -19,6 +19,30 @@ const NAV_ITEMS = [
     label: { ar: 'النماذج', en: 'Forms' },
     path: '/dashboard/admin/forms',
     roles: ['SuperAdmin'],
+  },
+  {
+    icon: UserPlus,
+    label: { ar: 'إدارة التسجيل', en: 'Registration Management' },
+    path: '/dashboard/admin/registration',
+    roles: ['SuperAdmin'],
+  },
+  {
+    icon: Users,
+    label: { ar: 'إدارة المستخدمين', en: 'Users Management' },
+    path: '/dashboard/admin/users',
+    roles: ['SuperAdmin'],
+  },
+  {
+    icon: UserPlus,
+    label: { ar: 'إدارة التسجيل', en: 'Registration Management' },
+    path: '/dashboard/secretary/registration',
+    roles: ['Secretary'],
+  },
+  {
+    icon: UserPlus,
+    label: { ar: 'إدارة التسجيل', en: 'Registration Management' },
+    path: '/dashboard/ta/registration',
+    roles: ['TeachingAssistant'],
   },
   {
     icon: ClipboardList,

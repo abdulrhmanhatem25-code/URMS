@@ -82,3 +82,13 @@ export function useWithdrawRequest() {
     },
   })
 }
+
+export function useSendToAdministration() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, body }) => requestsApi.sendToAdministration(id, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ALL_REQUESTS_KEY })
+    },
+  })
+}

@@ -13,6 +13,9 @@ const AllRequestsPage = lazy(() => import('@/features/requests/pages/AllRequests
 const RequestsPage = lazy(() => import('@/features/requests/pages/RequestsPage'))
 const SubmitRequestPage = lazy(() => import('@/features/requests/pages/SubmitRequestPage'))
 const MyRequestsPage = lazy(() => import('@/features/student/pages/MyRequestsPage'))
+const RegistrationManagementPage = lazy(() => import('@/features/registration/pages/RegistrationManagementPage'))
+const UsersManagementPage = lazy(() => import('@/features/users/pages/UsersManagementPage'))
+const AdmissionReviewPage = lazy(() => import('@/features/admission/pages/AdmissionReviewPage'))
 
 // Fallback loader
 function PageLoader() {
@@ -31,6 +34,9 @@ export default function AppRoutes() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        
+        {/* Unprotected Admission Review — magic link sent via email, no auth required */}
+        <Route path="/admition/admition-requests/:token" element={<AdmissionReviewPage />} />
 
         {/* ── Unified Dashboard Layout (Role-Protected) ─────────────────────── */}
         <Route
@@ -49,10 +55,20 @@ export default function AppRoutes() {
           <Route path="admin/requests" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><RequestsPage basePath="/dashboard/admin/requests" /></ProtectedRoute>} />
           <Route path="admin/requests/:formId" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><SubmitRequestPage /></ProtectedRoute>} />
           <Route path="admin/manage-requests" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><AllRequestsPage /></ProtectedRoute>} />
+          <Route path="admin/registration" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><RegistrationManagementPage /></ProtectedRoute>} />
+          <Route path="admin/users" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><UsersManagementPage /></ProtectedRoute>} />
           
           {/** Academic Advisor */}
           <Route path="advisor" element={<Navigate to="my-requests" replace />} />
           <Route path="advisor/manage-requests" element={<ProtectedRoute allowedRoles={['AcademicAdvisor']}><AllRequestsPage /></ProtectedRoute>} />
+
+          {/** Secretary */}
+          <Route path="secretary" element={<Navigate to="registration" replace />} />
+          <Route path="secretary/registration" element={<ProtectedRoute allowedRoles={['Secretary']}><RegistrationManagementPage /></ProtectedRoute>} />
+
+          {/** Teaching Assistant */}
+          <Route path="ta" element={<Navigate to="registration" replace />} />
+          <Route path="ta/registration" element={<ProtectedRoute allowedRoles={['TeachingAssistant']}><RegistrationManagementPage /></ProtectedRoute>} />
 
           {/* Student routes */} 
           <Route path="student" element={<Navigate to="requests" replace />} />

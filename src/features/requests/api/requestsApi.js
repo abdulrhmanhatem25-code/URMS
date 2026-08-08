@@ -30,4 +30,9 @@ export const requestsApi = {
 
   /** POST /api/Requests/:id/withdraw */
   withdrawRequest: (id) => api.post(`/api/Requests/${id}/withdraw`).then(r => r.data),
+
+  /** POST /api/Requests/:id/send-to-administration */
+  sendToAdministration: (id, body) => api.post(`/api/Requests/${id}/send-to-administration`, body).then(r => r.data),
+
 }
+
