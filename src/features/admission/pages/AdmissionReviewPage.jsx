@@ -64,26 +64,7 @@ export default function AdmissionReviewPage() {
     )
   }
 
-  // ── Invalid / Expired Token ──────────────────────────────────────────────────
-  if (isError) {
-    const msg = error?.response?.data?.message || 'هذا الرابط غير صالح أو تم استخدامه مسبقاً أو انتهت صلاحيته.'
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6 p-6">
-        <div className="p-5 bg-destructive/10 rounded-full border border-destructive/20">
-          <LinkIcon className="w-10 h-10 text-destructive" />
-        </div>
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold text-foreground mb-2">عذراً!</h1>
-          <p className="text-muted-foreground text-sm leading-relaxed">{msg}</p>
-        </div>
-        <div className="px-4 py-2 bg-secondary rounded-lg border border-border text-xs text-muted-foreground font-mono">
-          Token: {token}
-        </div>
-      </div>
-    )
-  }
-
-  // ── Success (After Submission) ───────────────────────────────────────────────
+  // ── Success (After Submission) — must come before isError check ─────────────
   if (isDone) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6 p-6">
@@ -113,6 +94,26 @@ export default function AdmissionReviewPage() {
       </div>
     )
   }
+
+  // ── Invalid / Expired Token ──────────────────────────────────────────────────
+  if (isError) {
+    const msg = error?.response?.data?.message || 'هذا الرابط غير صالح أو تم استخدامه مسبقاً أو انتهت صلاحيته.'
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6 p-6">
+        <div className="p-5 bg-destructive/10 rounded-full border border-destructive/20">
+          <LinkIcon className="w-10 h-10 text-destructive" />
+        </div>
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold text-foreground mb-2">عذراً!</h1>
+          <p className="text-muted-foreground text-sm leading-relaxed">{msg}</p>
+        </div>
+        <div className="px-4 py-2 bg-secondary rounded-lg border border-border text-xs text-muted-foreground font-mono">
+          Token: {token}
+        </div>
+      </div>
+    )
+  }
+
 
   // ── Data ─────────────────────────────────────────────────────────────────────
   const additionalData = request?.additionalData ?? {}
