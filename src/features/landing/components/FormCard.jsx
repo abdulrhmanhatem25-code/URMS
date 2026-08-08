@@ -20,6 +20,11 @@ export default function FormCard({ form }) {
   const title = lang === 'ar' ? form.titleAr : form.titleEn
   const Arrow = dir === 'rtl' ? ArrowLeft : ArrowRight
 
+  const now = new Date()
+  const isActive = form.isActive !== undefined 
+    ? form.isActive 
+    : (new Date(form.startDate) <= now && new Date(form.endDate) >= now)
+
   const handleClick = () => {
     navigate('/login')
   }
@@ -32,7 +37,7 @@ export default function FormCard({ form }) {
         'group relative flex flex-col bg-card rounded-xl border border-border p-5 gap-4',
         'cursor-pointer transition-all duration-200',
         'hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5',
-        !form.isActive && 'opacity-80'
+        !isActive && 'opacity-80'
       )}
     >
       {/* Status badge */}
@@ -40,12 +45,12 @@ export default function FormCard({ form }) {
         <span
           className={cn(
             'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold',
-            form.isActive
+            isActive
               ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
               : 'bg-destructive/10 text-destructive border border-destructive/20'
           )}
         >
-          {form.isActive
+          {isActive
             ? <><CheckCircle className="w-3 h-3" /> {tx.active}</>
             : <><XCircle className="w-3 h-3" /> {tx.closed}</>
           }
@@ -71,7 +76,7 @@ export default function FormCard({ form }) {
       )}
 
       {/* Closed reason */}
-      {!form.isActive && form.closedReasonMessage && (
+      {!isActive && form.closedReasonMessage && (
         <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-destructive/5 border border-destructive/15 text-xs text-destructive">
           <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
           <span>{form.closedReasonMessage}</span>
