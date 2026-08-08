@@ -57,18 +57,17 @@ export default function AppRoutes() {
           <Route path="admin/manage-requests" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><AllRequestsPage /></ProtectedRoute>} />
           <Route path="admin/registration" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><RegistrationManagementPage /></ProtectedRoute>} />
           <Route path="admin/users" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><UsersManagementPage /></ProtectedRoute>} />
-          
+
           {/** Academic Advisor */}
           <Route path="advisor" element={<Navigate to="my-requests" replace />} />
-          <Route path="advisor/manage-requests" element={<ProtectedRoute allowedRoles={['AcademicAdvisor']}><AllRequestsPage /></ProtectedRoute>} />
+          <Route path="advisor/manage-requests" element={<ProtectedRoute allowedRoles={['AcademicAdvisor']}><AllRequestsPage basePath="/dashboard/advisor/manage-requests" /></ProtectedRoute>} />
+          <Route path="advisor/registration" element={<ProtectedRoute allowedRoles={['AcademicAdvisor']}><RegistrationManagementPage /></ProtectedRoute>} />
 
           {/** Secretary */}
           <Route path="secretary" element={<Navigate to="registration" replace />} />
           <Route path="secretary/registration" element={<ProtectedRoute allowedRoles={['Secretary']}><RegistrationManagementPage /></ProtectedRoute>} />
 
           {/** Teaching Assistant */}
-          <Route path="ta" element={<Navigate to="registration" replace />} />
-          <Route path="ta/registration" element={<ProtectedRoute allowedRoles={['TeachingAssistant']}><RegistrationManagementPage /></ProtectedRoute>} />
 
           {/* Student routes */} 
           <Route path="student" element={<Navigate to="requests" replace />} />

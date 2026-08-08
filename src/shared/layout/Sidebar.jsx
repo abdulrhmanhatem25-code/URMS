@@ -41,8 +41,8 @@ const NAV_ITEMS = [
   {
     icon: UserPlus,
     label: { ar: 'إدارة التسجيل', en: 'Registration Management' },
-    path: '/dashboard/ta/registration',
-    roles: ['TeachingAssistant'],
+    path: '/dashboard/advisor/registration',
+    roles: ['AcademicAdvisor'],
   },
   {
     icon: ClipboardList,
