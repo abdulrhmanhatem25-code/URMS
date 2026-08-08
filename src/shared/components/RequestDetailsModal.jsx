@@ -497,10 +497,10 @@ export default function RequestDetailsModal({ request, isOpen, onClose }) {
           {user?.roles?.includes('SuperAdmin') && (
             <AdminAction request={request} onClose={onClose} lang={lang} />
           )}
-          {(user?.roles?.includes('SuperAdmin') || user?.roles?.includes('Secretary')) && 
-           request.status === 'AdvisorApproved' && (
+          {(user?.roles?.includes('SuperAdmin') || user?.roles?.includes('Secretary')) && (
             <SendToAdministrationAction request={request} onClose={onClose} lang={lang} />
           )}
+
         </div>
 
         {/* ── Footer ──────────────────────────────────────────────────────── */}
