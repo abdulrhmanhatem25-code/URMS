@@ -18,6 +18,7 @@ const UsersManagementPage = lazy(() => import('@/features/users/pages/UsersManag
 const AdmissionReviewPage = lazy(() => import('@/features/admission/pages/AdmissionReviewPage'))
 const MyStudentsPage = lazy(() => import('@/features/advisorAssignments/pages/MyStudentsPage'))
 const ChangePasswordPage = lazy(() => import('@/features/auth/pages/ChangePasswordPage'))
+const AdvisorAssignmentsPage = lazy(() => import('@/features/admin/pages/AdvisorAssignmentsPage'))
 
 // Fallback loader
 function PageLoader() {
@@ -59,6 +60,7 @@ export default function AppRoutes() {
           <Route path="admin/manage-requests" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><AllRequestsPage /></ProtectedRoute>} />
           <Route path="admin/registration" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><RegistrationManagementPage /></ProtectedRoute>} />
           <Route path="admin/users" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><UsersManagementPage /></ProtectedRoute>} />
+          <Route path="admin/advisor-assignments" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><AdvisorAssignmentsPage /></ProtectedRoute>} />
 
           {/** Academic Advisor */}
           <Route path="advisor" element={<Navigate to="my-students" replace />} />

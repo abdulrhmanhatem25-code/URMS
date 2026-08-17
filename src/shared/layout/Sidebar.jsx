@@ -33,6 +33,12 @@ const NAV_ITEMS = [
     roles: ['SuperAdmin'],
   },
   {
+    icon: GraduationCap,
+    label: { ar: 'توزيع المرشدين', en: 'Advisor Assignments' },
+    path: '/dashboard/admin/advisor-assignments',
+    roles: ['SuperAdmin'],
+  },
+  {
     icon: UserPlus,
     label: { ar: 'إدارة التسجيل', en: 'Registration Management' },
     path: '/dashboard/secretary/registration',

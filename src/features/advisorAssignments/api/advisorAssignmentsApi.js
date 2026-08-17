@@ -10,4 +10,15 @@ export const advisorAssignmentsApi = {
     const { data } = await api.get('/api/AdvisorAssignments/my-students', { params })
     return data
   },
+
+  /**
+   * GET /api/AdvisorAssignments  (Admin only)
+   * Returns all advisors with their assigned students.
+   * @param {Object} params - { searchColumn, searchTerm, pageNumber, pageSize }
+   */
+  getAll: async (params = {}) => {
+    const { data } = await api.get('/api/AdvisorAssignments', { params })
+    return data
+  },
 }
+

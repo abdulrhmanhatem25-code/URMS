@@ -15,3 +15,19 @@ export const useMyStudents = (params = {}) => {
     staleTime: 1000 * 30,    // 30s before re-fetch
   })
 }
+
+/**
+ * [Admin] Fetch all advisors with their assigned students.
+ * Supports search (searchColumn + searchTerm) and pagination.
+ *
+ * @param {Object} params - { searchColumn, searchTerm, pageNumber, pageSize }
+ */
+export const useAllAdvisorAssignments = (params = {}) => {
+  return useQuery({
+    queryKey: ['admin-advisor-assignments', params],
+    queryFn: () => advisorAssignmentsApi.getAll(params),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
+  })
+}
+
