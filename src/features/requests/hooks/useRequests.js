@@ -2,8 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { requestsApi } from '../api/requestsApi'
 
 const FORMS_KEY = ['student-public-forms']
-const MY_REQUESTS_KEY = ['student-my-requests']
-const ALL_REQUESTS_KEY = ['admin-all-requests']
+const MY_REQUESTS_KEY = 'student-my-requests'
+const ALL_REQUESTS_KEY = 'admin-all-requests'
 
 export function usePublicForms() {
   return useQuery({
@@ -18,17 +18,29 @@ export function useSubmitRequest() {
   })
 }
 
-export function useMyRequests() {
+/**
+ * Fetch the current student's own requests with server-side filtering + pagination.
+ * @param {Object} params - { status, searchColumn, searchTerm, pageNumber, pageSize }
+ */
+export function useMyRequests(params = {}) {
   return useQuery({
-    queryKey: MY_REQUESTS_KEY,
-    queryFn: requestsApi.getMyRequests,
+    queryKey: [MY_REQUESTS_KEY, params],
+    queryFn: () => requestsApi.getMyRequests(params),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
   })
 }
 
-export function useAllRequests() {
+/**
+ * Fetch all requests (admin/advisor/secretary) with server-side filtering + pagination.
+ * @param {Object} params - { status, searchColumn, searchTerm, pageNumber, pageSize }
+ */
+export function useAllRequests(params = {}) {
   return useQuery({
-    queryKey: ALL_REQUESTS_KEY,
-    queryFn: requestsApi.getRequests,
+    queryKey: [ALL_REQUESTS_KEY, params],
+    queryFn: () => requestsApi.getRequests(params),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
   })
 }
 
@@ -36,6 +48,7 @@ export function useGetStatuses() {
   return useQuery({
     queryKey: ['request-statuses'],
     queryFn: requestsApi.getStatuses,
+    staleTime: Infinity,   // statuses never change at runtime
   })
 }
 
@@ -44,8 +57,8 @@ export function useAdvisorReview() {
   return useMutation({
     mutationFn: ({ id, body }) => requestsApi.advisorReview(id, body),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ALL_REQUESTS_KEY })
-      qc.invalidateQueries({ queryKey: MY_REQUESTS_KEY })
+      qc.invalidateQueries({ queryKey: [ALL_REQUESTS_KEY] })
+      qc.invalidateQueries({ queryKey: [MY_REQUESTS_KEY] })
     },
   })
 }
@@ -55,8 +68,8 @@ export function useStaffConfirm() {
   return useMutation({
     mutationFn: ({ id, body }) => requestsApi.staffConfirm(id, body),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ALL_REQUESTS_KEY })
-      qc.invalidateQueries({ queryKey: MY_REQUESTS_KEY })
+      qc.invalidateQueries({ queryKey: [ALL_REQUESTS_KEY] })
+      qc.invalidateQueries({ queryKey: [MY_REQUESTS_KEY] })
     },
   })
 }
@@ -66,8 +79,8 @@ export function useAdminOverride() {
   return useMutation({
     mutationFn: ({ id, body }) => requestsApi.adminOverride(id, body),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ALL_REQUESTS_KEY })
-      qc.invalidateQueries({ queryKey: MY_REQUESTS_KEY })
+      qc.invalidateQueries({ queryKey: [ALL_REQUESTS_KEY] })
+      qc.invalidateQueries({ queryKey: [MY_REQUESTS_KEY] })
     },
   })
 }
@@ -77,8 +90,8 @@ export function useWithdrawRequest() {
   return useMutation({
     mutationFn: (id) => requestsApi.withdrawRequest(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ALL_REQUESTS_KEY })
-      qc.invalidateQueries({ queryKey: MY_REQUESTS_KEY })
+      qc.invalidateQueries({ queryKey: [ALL_REQUESTS_KEY] })
+      qc.invalidateQueries({ queryKey: [MY_REQUESTS_KEY] })
     },
   })
 }
@@ -88,7 +101,7 @@ export function useSendToAdministration() {
   return useMutation({
     mutationFn: ({ id, body }) => requestsApi.sendToAdministration(id, body),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ALL_REQUESTS_KEY })
+      qc.invalidateQueries({ queryKey: [ALL_REQUESTS_KEY] })
     },
   })
 }

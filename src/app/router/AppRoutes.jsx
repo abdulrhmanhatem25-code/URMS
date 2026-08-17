@@ -16,6 +16,8 @@ const MyRequestsPage = lazy(() => import('@/features/student/pages/MyRequestsPag
 const RegistrationManagementPage = lazy(() => import('@/features/registration/pages/RegistrationManagementPage'))
 const UsersManagementPage = lazy(() => import('@/features/users/pages/UsersManagementPage'))
 const AdmissionReviewPage = lazy(() => import('@/features/admission/pages/AdmissionReviewPage'))
+const MyStudentsPage = lazy(() => import('@/features/advisorAssignments/pages/MyStudentsPage'))
+const ChangePasswordPage = lazy(() => import('@/features/auth/pages/ChangePasswordPage'))
 
 // Fallback loader
 function PageLoader() {
@@ -59,7 +61,8 @@ export default function AppRoutes() {
           <Route path="admin/users" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><UsersManagementPage /></ProtectedRoute>} />
 
           {/** Academic Advisor */}
-          <Route path="advisor" element={<Navigate to="my-requests" replace />} />
+          <Route path="advisor" element={<Navigate to="my-students" replace />} />
+          <Route path="advisor/my-students" element={<ProtectedRoute allowedRoles={['AcademicAdvisor']}><MyStudentsPage /></ProtectedRoute>} />
           <Route path="advisor/manage-requests" element={<ProtectedRoute allowedRoles={['AcademicAdvisor']}><AllRequestsPage basePath="/dashboard/advisor/manage-requests" /></ProtectedRoute>} />
           <Route path="advisor/registration" element={<ProtectedRoute allowedRoles={['AcademicAdvisor']}><RegistrationManagementPage /></ProtectedRoute>} />
 
@@ -74,6 +77,9 @@ export default function AppRoutes() {
           <Route path="student/requests" element={<ProtectedRoute allowedRoles={['Student']}><RequestsPage basePath="/dashboard/student/requests" /></ProtectedRoute>} />
           <Route path="student/requests/:formId" element={<ProtectedRoute allowedRoles={['Student']}><SubmitRequestPage /></ProtectedRoute>} />
           <Route path="student/my-requests" element={<ProtectedRoute allowedRoles={['Student']}><MyRequestsPage /></ProtectedRoute>} />
+
+          {/* ── Shared (all roles) ───────────────────────────────────────────── */}
+          <Route path="change-password" element={<ChangePasswordPage />} />
         </Route>
 
         {/* ── Catch-all ─────────────────────────────────────────────────────── */}

@@ -2,10 +2,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { usersApi } from '../api/usersApi'
 import { useLanguageStore } from '@/app/store/useLanguageStore'
 
-export const useStudentsActivation = () => {
+export const useStudentsActivation = (params = {}) => {
   return useQuery({
-    queryKey: ['students-activation'],
-    queryFn: usersApi.getStudentsActivation
+    queryKey: ['students-activation', params],
+    queryFn: () => usersApi.getStudentsActivation(params),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
   })
 }
 

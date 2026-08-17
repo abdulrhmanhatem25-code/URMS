@@ -1,8 +1,8 @@
 import { api } from '@/lib/axios'
 
 export const requestsApi = {
-  /** GET /api/forms/active — fetch only active forms for students */
-  getForms: () => api.get('/api/forms/active').then(r => r.data),
+  /** GET /api/forms/active — response: { isSuccess, data: [...], errors } */
+  getForms: () => api.get('/api/forms/active').then(r => r.data.data),
 
   /**
    * POST /api/Requests
@@ -10,14 +10,14 @@ export const requestsApi = {
    */
   submitRequest: (body) => api.post('/api/Requests', body).then(r => r.data),
 
-  /** GET /api/Requests/my — fetch logged-in user's own requests */
-  getMyRequests: () => api.get('/api/Requests/my').then(r => r.data),
+  /** GET /api/Requests/my — response: { isSuccess, data: { items, pageNumber, totalPages, ... } } */
+  getMyRequests: (params = {}) => api.get('/api/Requests/my', { params }).then(r => r.data.data),
 
-  /** GET /api/Requests — all requests (SuperAdmin + Secretary + AcademicAdvisor) */
-  getRequests: () => api.get('/api/Requests').then(r => r.data),
+  /** GET /api/Requests — response: { isSuccess, data: { items, pageNumber, totalPages, ... } } */
+  getRequests: (params = {}) => api.get('/api/Requests', { params }).then(r => r.data.data),
 
-  /** GET /api/Requests/statuses — list of all possible statuses */
-  getStatuses: () => api.get('/api/Requests/statuses').then(r => r.data),
+  /** GET /api/Requests/statuses — response: { isSuccess, data: [...], errors } */
+  getStatuses: () => api.get('/api/Requests/statuses').then(r => r.data.data),
 
   /** POST /api/Requests/:id/advisor-review */
   advisorReview: (id, body) => api.post(`/api/Requests/${id}/advisor-review`, body).then(r => r.data),

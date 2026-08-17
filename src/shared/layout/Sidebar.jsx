@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, FileText, ClipboardList, LogOut, ChevronRight, ChevronLeft, UserPlus, Users } from 'lucide-react'
+import { LayoutDashboard, FileText, ClipboardList, LogOut, ChevronRight, ChevronLeft, UserPlus, Users, GraduationCap, KeyRound } from 'lucide-react'
 import { useLanguageStore } from '@/app/store/useLanguageStore'
 import { useAuthStore } from '@/app/store/useAuthStore'
 import { usePermissions } from '@/app/hooks/usePermissions'
@@ -39,6 +39,12 @@ const NAV_ITEMS = [
     roles: ['Secretary'],
   },
   {
+    icon: GraduationCap,
+    label: { ar: 'طلابي', en: 'My Students' },
+    path: '/dashboard/advisor/my-students',
+    roles: ['AcademicAdvisor'],
+  },
+  {
     icon: UserPlus,
     label: { ar: 'إدارة التسجيل', en: 'Registration Management' },
     path: '/dashboard/advisor/registration',
@@ -73,6 +79,13 @@ const NAV_ITEMS = [
     label: { ar: 'طلباتي', en: 'My Requests' },
     path: '/dashboard/student/my-requests',
     roles: ['Student'],
+  },
+  // ── Shared ───────────────────────────────────────────────────────────────
+  {
+    icon: KeyRound,
+    label: { ar: 'تغيير كلمة المرور', en: 'Change Password' },
+    path: '/dashboard/change-password',
+    // no roles = visible to all authenticated users
   },
 ]
 

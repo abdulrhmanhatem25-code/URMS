@@ -1,12 +1,73 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useStudentsActivation, useDeactivateUser, useReactivateUser } from '../hooks/useUsers'
 import { useLanguageStore } from '@/app/store/useLanguageStore'
-import { Loader2, AlertCircle, UserX, UserCheck, Shield } from 'lucide-react'
+import { Loader2, AlertCircle, UserX, UserCheck, Shield, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const PAGE_SIZE = 10
+
+const SEARCH_COLUMNS = [
+  { value: '',              labelAr: 'كل الحقول',          labelEn: 'All Fields' },
+  { value: 'fullNameAr',   labelAr: 'الاسم بالعربي',       labelEn: 'Name (AR)' },
+  { value: 'fullNameEn',   labelAr: 'الاسم بالإنجليزي',    labelEn: 'Name (EN)' },
+  { value: 'email',        labelAr: 'البريد الإلكتروني',   labelEn: 'Email' },
+  { value: 'universityCode', labelAr: 'كود الجامعة',       labelEn: 'University Code' },
+  { value: 'nationalId',   labelAr: 'الرقم القومي',        labelEn: 'National ID' },
+  { value: 'phoneNumber',  labelAr: 'رقم الهاتف',          labelEn: 'Phone' },
+]
+
+function Pagination({ pageNumber, totalPages, onPageChange, dir }) {
+  if (totalPages <= 1) return null
+  return (
+    <div className="flex items-center justify-center gap-2 pt-4" dir={dir}>
+      <button
+        onClick={() => onPageChange(pageNumber - 1)}
+        disabled={pageNumber === 1}
+        className="p-2 rounded-lg border border-border bg-card hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none transition-colors"
+      >
+        {dir === 'rtl' ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+      </button>
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+        <button
+          key={p}
+          onClick={() => onPageChange(p)}
+          className={cn(
+            'w-9 h-9 rounded-lg text-sm font-medium transition-colors',
+            p === pageNumber
+              ? 'bg-primary text-primary-foreground shadow-sm'
+              : 'border border-border bg-card hover:bg-secondary text-muted-foreground',
+          )}
+        >
+          {p}
+        </button>
+      ))}
+      <button
+        onClick={() => onPageChange(pageNumber + 1)}
+        disabled={pageNumber === totalPages}
+        className="p-2 rounded-lg border border-border bg-card hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none transition-colors"
+      >
+        {dir === 'rtl' ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+      </button>
+    </div>
+  )
+}
 
 export default function UsersManagementPage() {
   const { lang, dir } = useLanguageStore()
-  const { data: students, isLoading, isError, error } = useStudentsActivation()
+
+  const [searchColumn, setSearchColumn] = useState('')
+  const [inputValue,   setInputValue]   = useState('')
+  const [searchTerm,   setSearchTerm]   = useState('')
+  const [pageNumber,   setPageNumber]   = useState(1)
+
+  const params = {
+    ...(searchColumn && { searchColumn }),
+    ...(searchTerm   && { searchTerm }),
+    pageNumber,
+    pageSize: PAGE_SIZE,
+  }
+
+  const { data: paged, isLoading, isError, error, isFetching } = useStudentsActivation(params)
   const { mutate: deactivateUser, isPending: isDeactivating } = useDeactivateUser()
   const { mutate: reactivateUser, isPending: isReactivating } = useReactivateUser()
 
@@ -20,6 +81,22 @@ export default function UsersManagementPage() {
       reactivateUser(student.id, { onSettled: () => setProcessingId(null) })
     }
   }
+
+  const handleSearch = useCallback(() => {
+    setSearchTerm(inputValue.trim())
+    setPageNumber(1)
+  }, [inputValue])
+
+  const handleClear = () => {
+    setInputValue('')
+    setSearchTerm('')
+    setSearchColumn('')
+    setPageNumber(1)
+  }
+
+  const students    = paged?.items ?? []
+  const totalPages  = paged?.totalPages ?? 1
+  const totalCount  = paged?.totalCount ?? 0
 
   if (isLoading) {
     return (
@@ -42,7 +119,9 @@ export default function UsersManagementPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6" dir={dir}>
+
+      {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
@@ -52,13 +131,68 @@ export default function UsersManagementPage() {
             {lang === 'ar' ? 'مراجعة حالة تفعيل حسابات الطلاب' : 'Review student accounts activation status'}
           </p>
         </div>
-        <div className="px-4 py-2 bg-primary/10 text-primary rounded-xl font-medium text-sm border border-primary/20 shadow-sm">
+        <div className="px-4 py-2 bg-primary/10 text-primary rounded-xl font-medium text-sm border border-primary/20 shadow-sm flex items-center gap-1.5">
+          {isFetching && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           {lang === 'ar' ? 'إجمالي الطلاب: ' : 'Total Students: '}
-          <span className="font-bold">{students?.length || 0}</span>
+          <span className="font-bold">{totalCount}</span>
         </div>
       </div>
 
-      {students?.length === 0 ? (
+      {/* ── Search bar ── */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <select
+          value={searchColumn}
+          onChange={e => { setSearchColumn(e.target.value); setPageNumber(1) }}
+          className="sm:w-48 text-sm rounded-xl border border-border bg-card px-3 py-2.5 outline-none focus:border-primary transition-colors text-foreground"
+        >
+          {SEARCH_COLUMNS.map(col => (
+            <option key={col.value} value={col.value}>
+              {lang === 'ar' ? col.labelAr : col.labelEn}
+            </option>
+          ))}
+        </select>
+
+        <div className="flex flex-1 gap-2">
+          <div className="relative flex-1">
+            <Search className={cn('absolute top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground', dir === 'rtl' ? 'right-3' : 'left-3')} />
+            <input
+              type="text"
+              value={inputValue}
+              onChange={e => setInputValue(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              placeholder={lang === 'ar' ? 'ابحث…' : 'Search…'}
+              className={cn(
+                'w-full text-sm rounded-xl border border-border bg-card py-2.5 outline-none focus:border-primary transition-colors',
+                dir === 'rtl' ? 'pr-9 pl-3' : 'pl-9 pr-3',
+              )}
+            />
+          </div>
+          <button
+            onClick={handleSearch}
+            className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+          >
+            {lang === 'ar' ? 'بحث' : 'Search'}
+          </button>
+          {(searchTerm || inputValue) && (
+            <button
+              onClick={handleClear}
+              className="px-4 py-2.5 rounded-xl text-sm border border-border bg-card text-muted-foreground hover:bg-secondary transition-colors"
+            >
+              {lang === 'ar' ? 'مسح' : 'Clear'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Results info ── */}
+      <p className="text-sm text-muted-foreground">
+        {lang === 'ar'
+          ? `عرض ${students.length} من ${totalCount} طالب`
+          : `Showing ${students.length} of ${totalCount} students`}
+      </p>
+
+      {/* ── Empty ── */}
+      {students.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 px-4 border border-dashed border-border rounded-2xl bg-secondary/30">
           <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4 shadow-sm border border-border">
             <Shield className="w-8 h-8 text-primary" />
@@ -67,10 +201,13 @@ export default function UsersManagementPage() {
             {lang === 'ar' ? 'لا يوجد طلاب لعرضهم' : 'No students to display'}
           </h3>
         </div>
-      ) : (
+      )}
+
+      {/* ── Cards grid ── */}
+      {students.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {students?.map((student) => (
-            <div 
+          {students.map((student) => (
+            <div
               key={student.id}
               dir={dir}
               className="group flex flex-col bg-card rounded-2xl border border-border p-5 gap-4 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
@@ -78,12 +215,12 @@ export default function UsersManagementPage() {
               {/* Top row */}
               <div className="flex items-center justify-between gap-2">
                 <span className={cn(
-                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border",
-                  student.isActive 
-                    ? "bg-green-500/10 text-green-600 border-green-500/20"
-                    : "bg-red-500/10 text-red-600 border-red-500/20"
+                  'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border',
+                  student.isActive
+                    ? 'bg-green-500/10 text-green-600 border-green-500/20'
+                    : 'bg-red-500/10 text-red-600 border-red-500/20'
                 )}>
-                  {student.isActive 
+                  {student.isActive
                     ? (lang === 'ar' ? 'مفعل' : 'Active')
                     : (lang === 'ar' ? 'غير مفعل' : 'Inactive')}
                 </span>
@@ -106,13 +243,13 @@ export default function UsersManagementPage() {
                   <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
                     {lang === 'ar' ? 'كود الجامعة' : 'Uni Code'}
                   </p>
-                  <p className="font-semibold text-foreground">{student.universityCode}</p>
+                  <p className="font-semibold text-foreground">{student.universityCode || '—'}</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
                     {lang === 'ar' ? 'الرقم القومي' : 'National ID'}
                   </p>
-                  <p className="font-semibold text-foreground">{student.nationalId}</p>
+                  <p className="font-semibold text-foreground text-xs">{student.nationalId || '—'}</p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
@@ -130,11 +267,11 @@ export default function UsersManagementPage() {
                   onClick={() => handleToggleStatus(student)}
                   disabled={(isDeactivating || isReactivating) && processingId === student.id}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200",
+                    'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200',
                     student.isActive
-                      ? "bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground hover:shadow-md hover:-translate-y-0.5 border border-destructive/20 hover:border-transparent"
-                      : "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md hover:-translate-y-0.5",
-                    "disabled:opacity-50 disabled:pointer-events-none disabled:transform-none"
+                      ? 'bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground hover:shadow-md hover:-translate-y-0.5 border border-destructive/20 hover:border-transparent'
+                      : 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md hover:-translate-y-0.5',
+                    'disabled:opacity-50 disabled:pointer-events-none disabled:transform-none'
                   )}
                 >
                   {(isDeactivating || isReactivating) && processingId === student.id ? (
@@ -144,8 +281,8 @@ export default function UsersManagementPage() {
                   ) : (
                     <UserCheck className="w-4 h-4" />
                   )}
-                  {student.isActive 
-                    ? (lang === 'ar' ? 'إلغاء التفعيل' : 'Deactivate') 
+                  {student.isActive
+                    ? (lang === 'ar' ? 'إلغاء التفعيل' : 'Deactivate')
                     : (lang === 'ar' ? 'إعادة التفعيل' : 'Reactivate')}
                 </button>
               </div>
@@ -153,6 +290,14 @@ export default function UsersManagementPage() {
           ))}
         </div>
       )}
+
+      {/* ── Pagination ── */}
+      <Pagination
+        pageNumber={paged?.pageNumber ?? 1}
+        totalPages={totalPages}
+        onPageChange={setPageNumber}
+        dir={dir}
+      />
     </div>
   )
 }

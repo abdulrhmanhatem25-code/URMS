@@ -458,3 +458,21 @@ Download
     ]
   }
 ]
+
+
+{
+  "isSuccess": true,
+  "statusCode": 200,
+  "message": "Logged in successfully.",
+  "data": {
+    "id": "660b0364-1a4b-490a-a176-118b447a6a4c",
+    "email": "admin@urms.edu.eg",
+    "fullNameAr": "مدير النظام",
+    "fullNameEn": "Super Admin",
+    "universityCode": null,
+    "advisorCode": null,
+    "isApproved": true,
+    "isActive": true
+  },
+  "errors": null
+}

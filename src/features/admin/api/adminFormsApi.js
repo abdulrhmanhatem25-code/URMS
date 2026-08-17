@@ -1,11 +1,11 @@
 import { api } from '@/lib/axios'
 
 export const adminFormsApi = {
-  /** GET /api/admin/forms */
-  getForms: () => api.get('/api/admin/forms').then(r => r.data),
+  /** GET /api/admin/forms — response: { isSuccess, data: [...], errors } */
+  getForms: () => api.get('/api/admin/forms').then(r => r.data.data),
 
-  /** GET /api/admin/forms/:id */
-  getForm: (id) => api.get(`/api/admin/forms/${id}`).then(r => r.data),
+  /** GET /api/admin/forms/:id — response: { isSuccess, data: {...}, errors } */
+  getForm: (id) => api.get(`/api/admin/forms/${id}`).then(r => r.data.data),
 
   /** POST /api/admin/forms */
   createForm: (body) => api.post('/api/admin/forms', body).then(r => r.data),

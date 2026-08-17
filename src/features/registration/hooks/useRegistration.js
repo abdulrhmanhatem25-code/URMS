@@ -4,10 +4,12 @@ import { useLanguageStore } from '@/app/store/useLanguageStore'
 // Trigger HMR
 
 
-export const usePendingStudents = () => {
+export const usePendingStudents = (params = {}) => {
   return useQuery({
-    queryKey: ['pending-students'],
-    queryFn: registrationApi.getPendingStudents
+    queryKey: ['pending-students', params],
+    queryFn: () => registrationApi.getPendingStudents(params),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
   })
 }
 
