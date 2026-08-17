@@ -1,27 +1,26 @@
 import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAllAdvisorAssignments } from '@/features/advisorAssignments/hooks/useAdvisorAssignments'
 import { useLanguageStore } from '@/app/store/useLanguageStore'
 import {
   Loader2, AlertCircle, Search, ChevronLeft, ChevronRight,
-  GraduationCap, Users, Mail, Hash, ChevronDown, ChevronUp,
-  UserCheck, UserX,
+  GraduationCap, Users, Mail, Hash, ArrowLeft, ArrowRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 12
 
 const SEARCH_COLUMNS = [
-  { value: '',             labelAr: 'كل الحقول',          labelEn: 'All Fields' },
-  { value: 'advisorNameAr', labelAr: 'اسم المرشد (عربي)', labelEn: 'Advisor Name (AR)' },
-  { value: 'advisorNameEn', labelAr: 'اسم المرشد (إنجليزي)', labelEn: 'Advisor Name (EN)' },
-  { value: 'email',        labelAr: 'البريد الإلكتروني',   labelEn: 'Email' },
-  { value: 'advisorCode',  labelAr: 'كود المرشد',           labelEn: 'Advisor Code' },
+  { value: '',              labelAr: 'كل الحقول',              labelEn: 'All Fields' },
+  { value: 'advisorNameAr', labelAr: 'الاسم بالعربي',          labelEn: 'Name (AR)' },
+  { value: 'advisorNameEn', labelAr: 'الاسم بالإنجليزي',       labelEn: 'Name (EN)' },
+  { value: 'email',         labelAr: 'البريد الإلكتروني',      labelEn: 'Email' },
+  { value: 'advisorCode',   labelAr: 'كود المرشد',              labelEn: 'Advisor Code' },
 ]
 
 // ─── Pagination ───────────────────────────────────────────────────────────────
 function Pagination({ pageNumber, totalPages, onPageChange, dir }) {
   if (totalPages <= 1) return null
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
   return (
     <div className="flex items-center justify-center gap-2 pt-4" dir={dir}>
       <button
@@ -31,7 +30,7 @@ function Pagination({ pageNumber, totalPages, onPageChange, dir }) {
       >
         {dir === 'rtl' ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
       </button>
-      {pages.map(p => (
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
         <button
           key={p}
           onClick={() => onPageChange(p)}
@@ -56,145 +55,72 @@ function Pagination({ pageNumber, totalPages, onPageChange, dir }) {
   )
 }
 
-// ─── Student Row ──────────────────────────────────────────────────────────────
-function StudentRow({ student, lang, dir }) {
-  const name = lang === 'ar'
-    ? (student.studentNameAr || student.universityCode)
-    : (student.studentNameEn || student.universityCode)
-
-  return (
-    <div className={cn(
-      'flex items-center justify-between gap-3 px-3 py-2 rounded-lg',
-      'bg-secondary/30 hover:bg-secondary/60 transition-colors text-sm',
-    )}>
-      <div className="flex items-center gap-2 min-w-0">
-        <span className={cn(
-          'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border shrink-0',
-          student.isStudentRegistered
-            ? 'bg-green-500/10 text-green-600 border-green-500/20'
-            : 'bg-orange-500/10 text-orange-600 border-orange-500/20'
-        )}>
-          {student.isStudentRegistered
-            ? (lang === 'ar' ? <UserCheck className="w-3 h-3" /> : <UserCheck className="w-3 h-3" />)
-            : (lang === 'ar' ? <UserX className="w-3 h-3" /> : <UserX className="w-3 h-3" />)}
-        </span>
-        <span className="font-medium text-foreground truncate">{name}</span>
-      </div>
-      <span className="text-xs text-muted-foreground shrink-0" dir="ltr">
-        {student.universityCode}
-      </span>
-    </div>
-  )
-}
-
 // ─── Advisor Card ─────────────────────────────────────────────────────────────
-function AdvisorCard({ advisor, lang, dir }) {
-  const [expanded, setExpanded] = useState(false)
-
+function AdvisorCard({ advisor, lang, dir, onClick }) {
   const name = lang === 'ar' ? advisor.advisorNameAr : advisor.advisorNameEn
-  const students = advisor.students?.items ?? []
-  const registeredCount = students.filter(s => s.isStudentRegistered).length
-  const unregisteredCount = students.length - registeredCount
 
   return (
-    <div className={cn(
-      'bg-card rounded-2xl border border-border overflow-hidden',
-      'hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300',
-    )}>
-      {/* ── Card Header ── */}
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-3">
-          {/* Advisor info */}
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20 shrink-0">
-              <GraduationCap className="w-5 h-5 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-bold text-foreground leading-snug line-clamp-2">{name}</h3>
-              <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
-                <Hash className="w-3 h-3 shrink-0" />
-                <span dir="ltr">{advisor.advisorCode}</span>
-              </div>
-              <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
-                <Mail className="w-3 h-3 shrink-0" />
-                <span dir="ltr" className="truncate">{advisor.email}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Students count badge */}
-          <div className="flex flex-col items-center gap-1 shrink-0">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-xl border border-primary/20">
-              <Users className="w-3.5 h-3.5" />
-              <span className="text-sm font-bold">{advisor.totalStudents}</span>
-            </div>
-            <span className="text-[10px] text-muted-foreground">
-              {lang === 'ar' ? 'طالب' : 'students'}
-            </span>
-          </div>
+    <button
+      onClick={onClick}
+      className={cn(
+        'group w-full text-start bg-card rounded-2xl border border-border p-5',
+        'hover:border-primary/40 hover:shadow-xl hover:shadow-primary/8',
+        'hover:-translate-y-1 transition-all duration-300 cursor-pointer',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      )}
+    >
+      {/* Top row */}
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20 shrink-0 group-hover:bg-primary/20 transition-colors">
+          <GraduationCap className="w-5 h-5 text-primary" />
         </div>
-
-        {/* Stats row */}
-        {students.length > 0 && (
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            <div className="flex items-center gap-2 px-3 py-2 bg-green-500/8 border border-green-500/20 rounded-lg text-xs">
-              <UserCheck className="w-3.5 h-3.5 text-green-600 shrink-0" />
-              <span className="text-green-700 dark:text-green-400 font-medium">
-                {registeredCount} {lang === 'ar' ? 'مسجل' : 'registered'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 bg-orange-500/8 border border-orange-500/20 rounded-lg text-xs">
-              <UserX className="w-3.5 h-3.5 text-orange-600 shrink-0" />
-              <span className="text-orange-700 dark:text-orange-400 font-medium">
-                {unregisteredCount} {lang === 'ar' ? 'غير مسجل' : 'unregistered'}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Expand toggle */}
-        {students.length > 0 && (
-          <button
-            onClick={() => setExpanded(p => !p)}
-            className={cn(
-              'mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium transition-colors',
-              'border border-border hover:bg-secondary text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {expanded
-              ? <><ChevronUp className="w-3.5 h-3.5" />{lang === 'ar' ? 'إخفاء الطلاب' : 'Hide students'}</>
-              : <><ChevronDown className="w-3.5 h-3.5" />{lang === 'ar' ? 'عرض الطلاب' : 'Show students'}</>
-            }
-          </button>
-        )}
-
-        {advisor.totalStudents === 0 && (
-          <p className="mt-3 text-center text-xs text-muted-foreground py-2 border border-dashed border-border rounded-xl">
-            {lang === 'ar' ? 'لا يوجد طلاب مسندون' : 'No students assigned'}
-          </p>
-        )}
+        <div className={cn(
+          'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold border',
+          advisor.totalStudents > 0
+            ? 'bg-primary/10 text-primary border-primary/20'
+            : 'bg-muted text-muted-foreground border-border',
+        )}>
+          <Users className="w-3.5 h-3.5" />
+          {advisor.totalStudents}
+        </div>
       </div>
 
-      {/* ── Students List (collapsible) ── */}
-      {expanded && students.length > 0 && (
-        <div className="border-t border-border bg-secondary/20 px-4 py-3 space-y-1.5 max-h-72 overflow-y-auto scrollbar-thin">
-          {students.map(student => (
-            <StudentRow
-              key={student.assignmentId}
-              student={student}
-              lang={lang}
-              dir={dir}
-            />
-          ))}
+      {/* Name */}
+      <h3 className="font-bold text-foreground leading-snug line-clamp-2 mb-3 group-hover:text-primary transition-colors">
+        {name}
+      </h3>
+
+      {/* Meta */}
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Hash className="w-3 h-3 shrink-0" />
+          <span dir="ltr" className="font-medium">{advisor.advisorCode}</span>
         </div>
-      )}
-    </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Mail className="w-3 h-3 shrink-0" />
+          <span dir="ltr" className="truncate">{advisor.email}</span>
+        </div>
+      </div>
+
+      {/* Footer arrow */}
+      <div className={cn(
+        'flex items-center gap-1 mt-4 pt-3 border-t border-border/60',
+        'text-xs font-medium text-muted-foreground group-hover:text-primary transition-colors',
+        dir === 'rtl' ? 'flex-row' : 'flex-row-reverse',
+      )}>
+        {dir === 'rtl'
+          ? <><span>{lang === 'ar' ? 'عرض التفاصيل' : 'View Details'}</span><ArrowLeft className="w-3.5 h-3.5" /></>
+          : <><span>{lang === 'ar' ? 'عرض التفاصيل' : 'View Details'}</span><ArrowRight className="w-3.5 h-3.5" /></>
+        }
+      </div>
+    </button>
   )
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function AdvisorAssignmentsPage() {
   const { lang, dir } = useLanguageStore()
+  const navigate = useNavigate()
 
   const [searchColumn, setSearchColumn] = useState('')
   const [inputValue,   setInputValue]   = useState('')
@@ -257,8 +183,8 @@ export default function AdvisorAssignmentsPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {lang === 'ar'
-              ? 'عرض جميع المرشدين الأكاديميين والطلاب المسندين إليهم'
-              : 'View all academic advisors and their assigned students'}
+              ? 'اختر مرشداً لعرض بياناته وطلابه'
+              : 'Select an advisor to view their details and students'}
           </p>
         </div>
         <div className="px-4 py-2 bg-primary/10 text-primary rounded-xl font-medium text-sm border border-primary/20 shadow-sm flex items-center gap-1.5">
@@ -290,7 +216,7 @@ export default function AdvisorAssignmentsPage() {
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              placeholder={lang === 'ar' ? 'ابحث…' : 'Search…'}
+              placeholder={lang === 'ar' ? 'ابحث عن مرشد…' : 'Search advisor…'}
               className={cn(
                 'w-full text-sm rounded-xl border border-border bg-card py-2.5 outline-none focus:border-primary transition-colors',
                 dir === 'rtl' ? 'pr-9 pl-3' : 'pl-9 pr-3',
@@ -317,7 +243,7 @@ export default function AdvisorAssignmentsPage() {
       {/* ── Results info ── */}
       <p className="text-sm text-muted-foreground">
         {lang === 'ar'
-          ? `عرض ${advisors.length} من ${totalCount} مرشد أكاديمي`
+          ? `عرض ${advisors.length} من ${totalCount} مرشد`
           : `Showing ${advisors.length} of ${totalCount} advisors`}
       </p>
 
@@ -328,20 +254,26 @@ export default function AdvisorAssignmentsPage() {
             <GraduationCap className="w-8 h-8 text-primary" />
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-1">
-            {lang === 'ar' ? 'لا يوجد مرشدون لعرضهم' : 'No advisors to display'}
+            {lang === 'ar' ? 'لا يوجد مرشدون لعرضهم' : 'No advisors found'}
           </h3>
         </div>
       )}
 
-      {/* ── Advisor Cards grid ── */}
+      {/* ── Cards Grid ── */}
       {advisors.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {advisors.map(advisor => (
             <AdvisorCard
               key={advisor.advisorId}
               advisor={advisor}
               lang={lang}
               dir={dir}
+              onClick={() =>
+                navigate(
+                  `/dashboard/admin/advisor-assignments/${advisor.advisorId}`,
+                  { state: { advisor } }
+                )
+              }
             />
           ))}
         </div>
