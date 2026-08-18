@@ -11,6 +11,8 @@ export const useExternalRequest = (token) => {
     queryFn: () => admissionApi.getExternalRequest(token),
     enabled: !!token,
     retry: false,
+    // Unwrap the API envelope: { isSuccess, data: { ... } } → return data directly
+    select: (res) => res.data,
   })
 }
 

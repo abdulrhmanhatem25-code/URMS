@@ -180,7 +180,7 @@ export default function AdmissionReviewPage() {
                       className={cn('transition-colors', i % 2 === 0 ? 'bg-secondary/30' : 'bg-card')}
                     >
                       <td className="px-5 py-3 font-medium text-muted-foreground border-b border-border/50 w-1/2">{key}</td>
-                      <td className="px-5 py-3 text-foreground border-b border-border/50">{value}</td>
+                      <td className="px-5 py-3 text-foreground border-b border-border/50">{String(value)}</td>
                     </tr>
                   ))}
                 </tbody>
