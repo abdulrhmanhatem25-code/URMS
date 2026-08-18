@@ -485,7 +485,7 @@ export default function RequestDetailsModal({ request, isOpen, onClose }) {
           </div>
 
           {/* ── Action Forms ─────────────────────────────────────────────── */}
-          {request.canWithdraw && (
+          {request.canWithdraw && user?.roles?.includes('Student') && (
             <StudentAction request={request} onClose={onClose} lang={lang} />
           )}
           {user?.roles?.includes('AcademicAdvisor') && (
